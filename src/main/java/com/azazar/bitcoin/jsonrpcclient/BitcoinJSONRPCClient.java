@@ -47,7 +47,7 @@ import com.azazar.krotjson.JSON;
  *
  * @author Mikhail Yevchenko <m.ṥῥẚɱ.ѓѐḿởύḙ@azazar.com>
  */
-public abstract class BitcoinJSONRPCClient extends AbstractBitcoinClient {
+public class BitcoinJSONRPCClient extends AbstractBitcoinClient {
 
     private static final Logger logger = Logger.getLogger(BitcoinJSONRPCClient.class.getCanonicalName());
 
