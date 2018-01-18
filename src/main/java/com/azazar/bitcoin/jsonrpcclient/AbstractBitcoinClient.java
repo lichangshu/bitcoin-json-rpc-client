@@ -38,13 +38,18 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
 
     public abstract Object query(String method, Object... o) throws BitcoinException;
 
+    @Override
+    public List<String> getRawMempool() throws BitcoinException {
+        return (List<String>) query("getrawmempool", new String[] {});
+    }
+
     public void addNode(String node, AddNoteCmd command) throws BitcoinException {
         query("addnode", node, command.toString());
     }
 
     public String createRawTransaction(List<TxInput> inputs, List<TxOutput> outputs) throws BitcoinException {
         List<Map> pInputs = new ArrayList<Map>();
-        
+
         for (final TxInput txInput : inputs) {
             pInputs.add(new LinkedHashMap() {
                 {
@@ -53,16 +58,16 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
                 }
             });
         }
-        
+
         Map<String, Double> pOutputs = new LinkedHashMap();
-        
+
         Double oldValue;
         for (TxOutput txOutput : outputs) {
             if ((oldValue = pOutputs.put(txOutput.address(), txOutput.amount())) != null)
                 pOutputs.put(txOutput.address(), BitcoinUtil.normalizeAmount(oldValue.doubleValue() + txOutput.amount()));
-//                throw new BitcoinException("Duplicate output");
+            // throw new BitcoinException("Duplicate output");
         }
-        
+
         return (String) query("createrawtransaction", pInputs, pOutputs);
     }
 
@@ -77,6 +82,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
     public String getAccount(String address) throws BitcoinException {
         return (String) query("getaccount", address);
     }
+
     public String getAccountAddress(String account) throws BitcoinException {
         return (String) query("getaccountaddress", account);
     }
@@ -168,8 +174,9 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         }
 
     }
+
     public Block getBlock(String blockHash) throws BitcoinException {
-        return new BlockMapWrapper((Map)query("getblock", blockHash));
+        return new BlockMapWrapper((Map) query("getblock", blockHash));
     }
 
     public int getBlockCount() throws BitcoinException {
@@ -267,8 +274,9 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         }
 
     }
+
     public Info getInfo() throws BitcoinException {
-        return new InfoMapWrapper((Map)query("getinfo"));
+        return new InfoMapWrapper((Map) query("getinfo"));
     }
 
     private class MiningInfoMapWrapper extends MapWrapper implements MiningInfo {
@@ -322,8 +330,9 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         }
 
     }
+
     public MiningInfo getMiningInfo() throws BitcoinException {
-        return new MiningInfoMapWrapper((Map)query("getmininginfo"));
+        return new MiningInfoMapWrapper((Map) query("getmininginfo"));
     }
 
     public String getNewAddress() throws BitcoinException {
@@ -393,8 +402,9 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         }
 
     }
+
     public PeerInfo getPeerInfo() throws BitcoinException {
-        return new PeerInfoMapWrapper((Map)query("getmininginfo"));
+        return new PeerInfoMapWrapper((Map) query("getmininginfo"));
     }
 
     public String getRawTransactionHex(String txId) throws BitcoinException {
@@ -514,9 +524,9 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
                 public List<String> addresses() {
                     return (List) m.get("addresses");
                 }
-                
+
             }
-            
+
             public ScriptPubKey scriptPubKey() {
                 return new ScriptPubKeyImpl((Map) m.get("scriptPubKey"));
             }
@@ -528,8 +538,9 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
             public RawTransaction transaction() {
                 return RawTransactionImpl.this;
             }
-            
+
         }
+
         public List<Out> vOut() {
             final List<Map<String, Object>> vOut = (List<Map<String, Object>>) m.get("vout");
             return new AbstractList<Out>() {
@@ -585,7 +596,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
     }
 
     public RawTransaction getTransaction(String txId) throws BitcoinException {
-        return new RawTransactionImpl((Map) query("gettransaction", txId));
+        return this.getRawTransaction(txId);
     }
 
     public TxOutSetInfo getTxOutSetInfo() throws BitcoinException {
@@ -679,15 +690,15 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
     }
 
     public List<ReceivedAddress> listReceivedByAccount() throws BitcoinException {
-        return new ReceivedAddressListWrapper((List)query("listreceivedbyaccount"));
+        return new ReceivedAddressListWrapper((List) query("listreceivedbyaccount"));
     }
 
     public List<ReceivedAddress> listReceivedByAccount(int minConf) throws BitcoinException {
-        return new ReceivedAddressListWrapper((List)query("listreceivedbyaccount", minConf));
+        return new ReceivedAddressListWrapper((List) query("listreceivedbyaccount", minConf));
     }
 
     public List<ReceivedAddress> listReceivedByAccount(int minConf, boolean includeEmpty) throws BitcoinException {
-        return new ReceivedAddressListWrapper((List)query("listreceivedbyaccount", minConf, includeEmpty));
+        return new ReceivedAddressListWrapper((List) query("listreceivedbyaccount", minConf, includeEmpty));
     }
 
     private static class ReceivedAddressListWrapper extends AbstractList<ReceivedAddress> {
@@ -733,15 +744,15 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
     }
 
     public List<ReceivedAddress> listReceivedByAddress() throws BitcoinException {
-        return new ReceivedAddressListWrapper((List)query("listreceivedbyaddress"));
+        return new ReceivedAddressListWrapper((List) query("listreceivedbyaddress"));
     }
 
     public List<ReceivedAddress> listReceivedByAddress(int minConf) throws BitcoinException {
-        return new ReceivedAddressListWrapper((List)query("listreceivedbyaddress", minConf));
+        return new ReceivedAddressListWrapper((List) query("listreceivedbyaddress", minConf));
     }
 
     public List<ReceivedAddress> listReceivedByAddress(int minConf, boolean includeEmpty) throws BitcoinException {
-        return new ReceivedAddressListWrapper((List)query("listreceivedbyaddress", minConf, includeEmpty));
+        return new ReceivedAddressListWrapper((List) query("listreceivedbyaddress", minConf, includeEmpty));
     }
 
     private class TransactionListMapWrapper extends ListMapWrapper<Transaction> {
@@ -777,11 +788,11 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
                 public int confirmations() {
                     return mapInt(m, "confirmations");
                 }
-                
+
                 public String blockHash() {
                     return mapStr(m, "blockhash");
                 }
-                
+
                 public int blockIndex() {
                     return mapInt(m, "blockindex");
                 }
@@ -826,7 +837,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
                 public String toString() {
                     return m.toString();
                 }
-                
+
             };
         }
 
@@ -838,7 +849,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         public final String lastBlock;
 
         public TransactionsSinceBlockImpl(Map r) {
-            this.transactions = new TransactionListMapWrapper((List)r.get("transactions"));
+            this.transactions = new TransactionListMapWrapper((List) r.get("transactions"));
             this.lastBlock = (String) r.get("lastblock");
         }
 
@@ -853,31 +864,31 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
     }
 
     public TransactionsSinceBlock listSinceBlock() throws BitcoinException {
-        return new TransactionsSinceBlockImpl((Map)query("listsinceblock"));
+        return new TransactionsSinceBlockImpl((Map) query("listsinceblock"));
     }
 
     public TransactionsSinceBlock listSinceBlock(String blockHash) throws BitcoinException {
-        return new TransactionsSinceBlockImpl((Map)query("listsinceblock", blockHash));
+        return new TransactionsSinceBlockImpl((Map) query("listsinceblock", blockHash));
     }
 
     public TransactionsSinceBlock listSinceBlock(String blockHash, int targetConfirmations) throws BitcoinException {
-        return new TransactionsSinceBlockImpl((Map)query("listsinceblock", blockHash, targetConfirmations));
+        return new TransactionsSinceBlockImpl((Map) query("listsinceblock", blockHash, targetConfirmations));
     }
 
     public List<Transaction> listTransactions() throws BitcoinException {
-        return new TransactionListMapWrapper((List)query("listtransactions"));
+        return new TransactionListMapWrapper((List) query("listtransactions"));
     }
 
     public List<Transaction> listTransactions(String account) throws BitcoinException {
-        return new TransactionListMapWrapper((List)query("listtransactions", account));
+        return new TransactionListMapWrapper((List) query("listtransactions", account));
     }
 
     public List<Transaction> listTransactions(String account, int count) throws BitcoinException {
-        return new TransactionListMapWrapper((List)query("listtransactions", account, count));
+        return new TransactionListMapWrapper((List) query("listtransactions", account, count));
     }
 
     public List<Transaction> listTransactions(String account, int count, int from) throws BitcoinException {
-        return new TransactionListMapWrapper((List)query("listtransactions", account, count, from));
+        return new TransactionListMapWrapper((List) query("listtransactions", account, count, from));
     }
 
     private class UnspentListWrapper extends ListMapWrapper<Unspent> {
@@ -923,19 +934,19 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
     }
 
     public List<Unspent> listUnspent() throws BitcoinException {
-        return new UnspentListWrapper((List)query("listunspent"));
+        return new UnspentListWrapper((List) query("listunspent"));
     }
 
     public List<Unspent> listUnspent(int minConf) throws BitcoinException {
-        return new UnspentListWrapper((List)query("listunspent", minConf));
+        return new UnspentListWrapper((List) query("listunspent", minConf));
     }
 
     public List<Unspent> listUnspent(int minConf, int maxConf) throws BitcoinException {
-        return new UnspentListWrapper((List)query("listunspent", minConf, maxConf));
+        return new UnspentListWrapper((List) query("listunspent", minConf, maxConf));
     }
 
     public List<Unspent> listUnspent(int minConf, int maxConf, String... addresses) throws BitcoinException {
-        return new UnspentListWrapper((List)query("listunspent", minConf, maxConf, addresses));
+        return new UnspentListWrapper((List) query("listunspent", minConf, maxConf, addresses));
     }
 
     public String sendFrom(String fromAccount, String toBitcoinAddress, double amount) throws BitcoinException {
@@ -961,10 +972,11 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         for (TxOutput txOutput : outputs) {
             if ((oldValue = pOutputs.put(txOutput.address(), txOutput.amount())) != null)
                 pOutputs.put(txOutput.address(), BitcoinUtil.normalizeAmount(oldValue.doubleValue() + txOutput.amount()));
-//                throw new BitcoinException("Duplicate output");
+            // throw new BitcoinException("Duplicate output");
         }
         return (String) query("sendmany", fromAccount, pOutputs);
     }
+
     public String sendMany(String fromAccount, List<TxOutput> outputs, int minConf) throws BitcoinException {
         Map<String, Double> pOutputs = new LinkedHashMap();
 
@@ -972,7 +984,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         for (TxOutput txOutput : outputs) {
             if ((oldValue = pOutputs.put(txOutput.address(), txOutput.amount())) != null)
                 pOutputs.put(txOutput.address(), BitcoinUtil.normalizeAmount(oldValue.doubleValue() + txOutput.amount()));
-//                throw new BitcoinException("Duplicate output");
+            // throw new BitcoinException("Duplicate output");
         }
         return (String) query("sendmany", fromAccount, pOutputs, minConf);
     }
@@ -984,7 +996,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         for (TxOutput txOutput : outputs) {
             if ((oldValue = pOutputs.put(txOutput.address(), txOutput.amount())) != null)
                 pOutputs.put(txOutput.address(), BitcoinUtil.normalizeAmount(oldValue.doubleValue() + txOutput.amount()));
-//                throw new BitcoinException("Duplicate output");
+            // throw new BitcoinException("Duplicate output");
         }
         return (String) query("sendmany", fromAccount, pOutputs, minConf, comment);
     }
@@ -1011,8 +1023,8 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
 
     public String signRawTransaction(String hex) throws BitcoinException {
         Map result = (Map) query("signrawtransaction", hex);
-        
-        if ((Boolean)result.get("complete"))
+
+        if ((Boolean) result.get("complete"))
             return (String) result.get("hex");
         else
             throw new BitcoinException("Incomplete");
@@ -1027,7 +1039,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         return new AddressValidationResult() {
 
             public boolean isValid() {
-                return ((Boolean)validationResult.get("isvalid"));
+                return ((Boolean) validationResult.get("isvalid"));
             }
 
             public String address() {
@@ -1035,11 +1047,11 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
             }
 
             public boolean isMine() {
-                return ((Boolean)validationResult.get("ismine"));
+                return ((Boolean) validationResult.get("ismine"));
             }
 
             public boolean isScript() {
-                return ((Boolean)validationResult.get("isscript"));
+                return ((Boolean) validationResult.get("isscript"));
             }
 
             public String pubKey() {
@@ -1047,7 +1059,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
             }
 
             public boolean isCompressed() {
-                return ((Boolean)validationResult.get("iscompressed"));
+                return ((Boolean) validationResult.get("iscompressed"));
             }
 
             public String account() {
@@ -1066,39 +1078,39 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
         return (Boolean) query("verifymessage", address, signature, message);
     }
 
-//    static {
-//        logger.setLevel(Level.ALL);
-//        for (Handler handler : logger.getParent().getHandlers())
-//            handler.setLevel(Level.ALL);
-//    }
+    // static {
+    // logger.setLevel(Level.ALL);
+    // for (Handler handler : logger.getParent().getHandlers())
+    // handler.setLevel(Level.ALL);
+    // }
 
-//    public static void donate() throws Exception {
-//        Bitcoin btc = new BitcoinJSONRPCClient();
-//        if (btc.getBalance() > 10)
-//            btc.sendToAddress("1AZaZarEn4DPEx5LDhfeghudiPoHhybTEr", 10);
-//    }
+    // public static void donate() throws Exception {
+    // Bitcoin btc = new BitcoinJSONRPCClient();
+    // if (btc.getBalance() > 10)
+    // btc.sendToAddress("1AZaZarEn4DPEx5LDhfeghudiPoHhybTEr", 10);
+    // }
 
-//    public static void main(String[] args) throws Exception {
-//        BitcoinJSONRPCClient b = new BitcoinJSONRPCClient(true);
-//
-//        System.out.println(b.listTransactions());
-//        
-////        String aa = "mjrxsupqJGBzeMjEiv57qxSKxgd3SVwZYd";
-////        String ab = "mpN3WTJYsrnnWeoMzwTxkp8325nzArxnxN";
-////        String ac = b.getNewAddress("TEST");
-////        
-////        System.out.println(b.getBalance("", 0));
-////        System.out.println(b.sendFrom("", ab, 0.1));
-////        System.out.println(b.sendToAddress(ab, 0.1, "comment", "tocomment"));
-////        System.out.println(b.getReceivedByAddress(ab));
-////        System.out.println(b.sendToAddress(ac, 0.01));
-////        
-////        System.out.println(b.validateAddress(ac));
-////        
-//////        b.importPrivKey(b.dumpPrivKey(aa));
-////        
-////        System.out.println(b.getAddressesByAccount("TEST"));
-////        System.out.println(b.listReceivedByAddress());
-//    }
+    // public static void main(String[] args) throws Exception {
+    // BitcoinJSONRPCClient b = new BitcoinJSONRPCClient(true);
+    //
+    // System.out.println(b.listTransactions());
+    //
+    //// String aa = "mjrxsupqJGBzeMjEiv57qxSKxgd3SVwZYd";
+    //// String ab = "mpN3WTJYsrnnWeoMzwTxkp8325nzArxnxN";
+    //// String ac = b.getNewAddress("TEST");
+    ////
+    //// System.out.println(b.getBalance("", 0));
+    //// System.out.println(b.sendFrom("", ab, 0.1));
+    //// System.out.println(b.sendToAddress(ab, 0.1, "comment", "tocomment"));
+    //// System.out.println(b.getReceivedByAddress(ab));
+    //// System.out.println(b.sendToAddress(ac, 0.01));
+    ////
+    //// System.out.println(b.validateAddress(ac));
+    ////
+    ////// b.importPrivKey(b.dumpPrivKey(aa));
+    ////
+    //// System.out.println(b.getAddressesByAccount("TEST"));
+    //// System.out.println(b.listReceivedByAddress());
+    // }
 
 }

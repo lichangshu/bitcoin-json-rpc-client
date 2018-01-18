@@ -224,7 +224,7 @@ public interface Bitcoin {
     }
     public PeerInfo getPeerInfo() throws BitcoinException;
     
-    //getrawmempool
+    public List<String> getRawMempool() throws BitcoinException;
     
     public String getRawTransactionHex(String txId) throws BitcoinException;
     
