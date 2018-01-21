@@ -7,6 +7,10 @@ Demo wiki https://en.bitcoin.it/wiki/Bitcoin-JSON-RPC-Client
 
 bitcoin with docker for test https://hub.docker.com/r/freewil/bitcoin-testnet-box/
 
-    ># docker run -t -i -p 19001:19001 -p 19011:19011 freewil/bitcoin-testnet-box
+    ># docker run -t -i -p 19001:19001 -p 19011:19011 freewil/bitcoin-testnet-box -daemon  -txindex 
+    
+修改  Mackfile 的start ，
+     bitcoind -datadir=1  -daemon -reindex -txindex
+     bitcoind -datadir=1  -daemon -reindex -txindex
 
 
