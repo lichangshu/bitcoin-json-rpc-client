@@ -518,7 +518,7 @@ public abstract class AbstractBitcoinClient implements Bitcoin {
                 }
 
                 public String type() {
-                    return mapStr(type());
+                    return mapStr("type");
                 }
 
                 public List<String> addresses() {
